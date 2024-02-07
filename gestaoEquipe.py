@@ -23,7 +23,7 @@ with col2:
     st.title('Gestão Equipe de Cobrança')
 
 caminho_onedrive = os.path.join(os.environ["ONEDRIVE"],'Base Resumida')
-caminho_Banco = os.path.join(caminho_onedrive, "EQUIPE", 'BDEquipe.db')
+caminho_Banco = 'BDEquipe.db'
 
 con = sqlite3.connect(caminho_Banco)
 cur = con.cursor()
