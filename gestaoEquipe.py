@@ -1,7 +1,7 @@
 from openpyxl import load_workbook
+from streamlit.logger import get_logger
 from datetime import datetime
 from datetime import date
-
 import streamlit as st
 import datetime as dt
 from git import Repo
@@ -24,120 +24,127 @@ with col1:
 with col2:
     st.title('Gestão Equipe de Cobrança')
 
-# caminho_onedrive = os.path.join(os.environ["ONEDRIVE"],'Base Resumida')
-caminho_Banco = 'BDEquipe.db'
+LOGGER = get_logger(__name__)
 
-con = sqlite3.connect(caminho_Banco)
-cur = con.cursor()
+def run():
+    # caminho_onedrive = os.path.join(os.environ["ONEDRIVE"],'Base Resumida')
+    caminho_Banco = 'BDEquipe.db'
 
-# novabase=pd.read_excel('EQUIPE COB E TELE.xlsm')
-# novabase=novabase.iloc[:,:8]
-# novabase.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
+    con = sqlite3.connect(caminho_Banco)
+    cur = con.cursor()
 
-# @st.cache
-def executa_sql(comando):
-    cur.execute(comando)
-    resultado = cur.fetchall()
-    resultado = pd.DataFrame(resultado)
-    resultado.columns = [i[0] for i in cur.description]
-    print(resultado.shape)
-    return resultado
+    # novabase=pd.read_excel('EQUIPE COB E TELE.xlsm')
+    # novabase=novabase.iloc[:,:8]
+    # novabase.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
 
-baseCompleta=executa_sql('SELECT * FROM Equipe_Completa')
-baseCompleta['RU']=baseCompleta['RU'].astype(str)
-baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0","")
-baseCompleta=baseCompleta.loc[baseCompleta['SIT. ATUAL']!='INATIVOS']
-# baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
+    # @st.cache
+    def executa_sql(comando):
+        cur.execute(comando)
+        resultado = cur.fetchall()
+        resultado = pd.DataFrame(resultado)
+        resultado.columns = [i[0] for i in cur.description]
+        print(resultado.shape)
+        return resultado
 
-# @st.cache
-def exibeEquipe(sit,eqp,rpt):
-    if sit == 'TODOS':
-        filtro_sit = baseCompleta['SIT. ATUAL'].notnull()  # Qualquer valor diferente de NaN
-    else:
-        filtro_sit = baseCompleta['SIT. ATUAL'] == sit
-    if eqp == 'TODOS':
-        filtro_eqp = baseCompleta['EQUIPE'].notnull()  # Qualquer valor diferente de NaN
-    else:
-        filtro_eqp = baseCompleta['EQUIPE'] == eqp
-    if rpt == 'TODOS':
-        filtro_rpt = baseCompleta['REPORTE'].notnull()  # Qualquer valor diferente de NaN
-    else:
-        filtro_rpt = baseCompleta['REPORTE'] == rpt
+    baseCompleta=executa_sql('SELECT * FROM Equipe_Completa')
+    baseCompleta['RU']=baseCompleta['RU'].astype(str)
+    baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0","")
+    baseCompleta=baseCompleta.loc[baseCompleta['SIT. ATUAL']!='INATIVOS']
+    # baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
 
-    DfEqpFiltro=baseCompleta.loc[filtro_sit & filtro_eqp & filtro_rpt].reset_index(drop=True)
-    qtdeColabs=len(DfEqpFiltro)
-    return DfEqpFiltro,qtdeColabs
+    # @st.cache
+    def exibeEquipe(sit,eqp,rpt):
+        if sit == 'TODOS':
+            filtro_sit = baseCompleta['SIT. ATUAL'].notnull()  # Qualquer valor diferente de NaN
+        else:
+            filtro_sit = baseCompleta['SIT. ATUAL'] == sit
+        if eqp == 'TODOS':
+            filtro_eqp = baseCompleta['EQUIPE'].notnull()  # Qualquer valor diferente de NaN
+        else:
+            filtro_eqp = baseCompleta['EQUIPE'] == eqp
+        if rpt == 'TODOS':
+            filtro_rpt = baseCompleta['REPORTE'].notnull()  # Qualquer valor diferente de NaN
+        else:
+            filtro_rpt = baseCompleta['REPORTE'] == rpt
 
-Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU']
-Situacao.insert(0,'TODOS')
-Equipe=list(baseCompleta['EQUIPE'].unique())
-Equipe.insert(0,'TODOS')
-Reporte=list(baseCompleta['REPORTE'].unique())
-Reporte.insert(0,'TODOS')
+        DfEqpFiltro=baseCompleta.loc[filtro_sit & filtro_eqp & filtro_rpt].reset_index(drop=True)
+        qtdeColabs=len(DfEqpFiltro)
+        return DfEqpFiltro,qtdeColabs
 
-col1, col2 = st.columns([1,3])
+    Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU']
+    Situacao.insert(0,'TODOS')
+    Equipe=list(baseCompleta['EQUIPE'].unique())
+    Equipe.insert(0,'TODOS')
+    Reporte=list(baseCompleta['REPORTE'].unique())
+    Reporte.insert(0,'TODOS')
 
-with col1:
-    optionsSit = st.selectbox(
-        'Selecione a Situação desejada',
-        Situacao)
-    optionsEqp = st.selectbox(
-        'Selecione a Equipe',
-        Equipe)
-    optionsRpt = st.selectbox(
-        'Selecione o Resáponsável',
-        Reporte)
-    DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
-    qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT. ATUAL']=='ATIVO'])
-    dif=qtdAtivos-qtdeColabs
-    col1.metric("Total de Colaboradores",qtdeColabs,dif)
-    col1.metric("Ativos",value=qtdAtivos)
+    col1, col2 = st.columns([1,3])
 
-with col2:
-    edited_df = st.data_editor(DfEqpFiltro,
-                               hide_index=True,
-                               column_config={
-                                   "SIT. ATUAL": st.column_config.SelectboxColumn(
-                                       "SIT. ATUAL",
-                                       help="Situação do Colaborador",
-                                       width="None",
-                                       options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'],
-                                       required=True,
-                                   )
-                               },
-                               num_rows="dynamic"
-                               )
-    atualizar = st.button('ATUALIZAR',type="primary")
+    with col1:
+        optionsSit = st.selectbox(
+            'Selecione a Situação desejada',
+            Situacao)
+        optionsEqp = st.selectbox(
+            'Selecione a Equipe',
+            Equipe)
+        optionsRpt = st.selectbox(
+            'Selecione o Resáponsável',
+            Reporte)
+        DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
+        qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT. ATUAL']=='ATIVO'])
+        dif=qtdAtivos-qtdeColabs
+        col1.metric("Total de Colaboradores",qtdeColabs,dif)
+        col1.metric("Ativos",value=qtdAtivos)
 
-if atualizar:
-    # Garanta que o índice de 'edited_df' seja exclusivo
-    edited_df = edited_df.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
+    with col2:
+        edited_df = st.data_editor(DfEqpFiltro,
+                                hide_index=True,
+                                column_config={
+                                    "SIT. ATUAL": st.column_config.SelectboxColumn(
+                                        "SIT. ATUAL",
+                                        help="Situação do Colaborador",
+                                        width="None",
+                                        options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'],
+                                        required=True,
+                                    )
+                                },
+                                num_rows="dynamic"
+                                )
+        atualizar = st.button('ATUALIZAR',type="primary")
 
-    # Crie uma cópia da baseCompleta filtrada
-    base_filtrada_copy = baseCompleta.loc[baseCompleta['Nome_Colaborador'].isin(edited_df['Nome_Colaborador'])].copy()
+    if atualizar:
+        # Garanta que o índice de 'edited_df' seja exclusivo
+        edited_df = edited_df.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
 
-    for i, col in enumerate(edited_df.columns):
-        if i > 0:
-            # Atualize apenas a cópia filtrada
-            base_filtrada_copy[col] = base_filtrada_copy['Nome_Colaborador'].map(
-                edited_df.set_index('Nome_Colaborador')[col])
+        # Crie uma cópia da baseCompleta filtrada
+        base_filtrada_copy = baseCompleta.loc[baseCompleta['Nome_Colaborador'].isin(edited_df['Nome_Colaborador'])].copy()
 
-    # Combine as informações atualizadas de volta à baseCompleta
-    baseCompleta.update(base_filtrada_copy, overwrite=True)
+        for i, col in enumerate(edited_df.columns):
+            if i > 0:
+                # Atualize apenas a cópia filtrada
+                base_filtrada_copy[col] = base_filtrada_copy['Nome_Colaborador'].map(
+                    edited_df.set_index('Nome_Colaborador')[col])
 
-    # Garanta que o índice de 'baseCompleta' seja exclusivo antes de salvar no SQL
-    baseCompleta = baseCompleta.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
+        # Combine as informações atualizadas de volta à baseCompleta
+        baseCompleta.update(base_filtrada_copy, overwrite=True)
 
-    # Salve no SQL
-    baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
-    st.rerun()
-caminho=os.getcwd()
-os.chdir(caminho)  # Certifique-se de estar no diretório correto
-repo = Repo('.')
-repo.git.add(update=True)
-repo.git.commit(m="Atualizando banco de dados")
-repo.git.push('origin', 'main')
-    # st.cache_data.clear()
-con.close()
+        # Garanta que o índice de 'baseCompleta' seja exclusivo antes de salvar no SQL
+        baseCompleta = baseCompleta.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
 
+        # Salve no SQL
+        baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
+        con.commit()
+        st.rerun()
+        
+    caminho=os.getcwd()
+    os.chdir(caminho)  # Certifique-se de estar no diretório correto
+    repo = Repo('.')
+    repo.git.add(update=True)
+    repo.git.commit(m="Atualizando banco de dados")
+    repo.git.push('origin', 'main')
+        # st.cache_data.clear()
+    con.close()
+
+if __name__ == "__main__":
+    run()
 
