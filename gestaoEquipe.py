@@ -98,7 +98,7 @@ with col2:
                                        "SIT. ATUAL",
                                        help="Situação do Colaborador",
                                        width="None",
-                                       options=list(baseCompleta['SIT. ATUAL'].unique()),
+                                       options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'],
                                        required=True,
                                    )
                                },
