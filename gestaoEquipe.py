@@ -1,8 +1,10 @@
 from openpyxl import load_workbook
 from datetime import datetime
 from datetime import date
+
 import streamlit as st
 import datetime as dt
+from git import Repo
 import pandas as pd 
 import sqlite3
 import time
@@ -129,9 +131,12 @@ if atualizar:
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
     st.rerun()
-    os.system("git add .")
-    os.system('git commit -m "Atualizando banco de dados"')
-    os.system("git push origin main")
+caminho=os.getcwd()
+os.chdir(caminho)  # Certifique-se de estar no diretório correto
+repo = Repo('.')
+repo.git.add(update=True)
+repo.git.commit(m="Atualizando banco de dados")
+repo.git.push('origin', 'main')
     # st.cache_data.clear()
 con.close()
 
