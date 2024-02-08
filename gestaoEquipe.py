@@ -135,7 +135,7 @@ def run():
         baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
         con.commit()
         st.rerun()
-        
+
     caminho=os.getcwd()
     os.chdir(caminho)  # Certifique-se de estar no diretório correto
     repo = Repo('.')
@@ -147,4 +147,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
