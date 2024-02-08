@@ -32,7 +32,7 @@ cur = con.cursor()
 # novabase=novabase.iloc[:,:8]
 # novabase.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
 
-@st.cache
+# @st.cache
 def executa_sql(comando):
     cur.execute(comando)
     resultado = cur.fetchall()
@@ -47,7 +47,7 @@ baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0"
 baseCompleta=baseCompleta.loc[baseCompleta['SIT. ATUAL']!='INATIVOS']
 # baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
 
-@st.cache
+# @st.cache
 def exibeEquipe(sit,eqp,rpt):
     if sit == 'TODOS':
         filtro_sit = baseCompleta['SIT. ATUAL'].notnull()  # Qualquer valor diferente de NaN
