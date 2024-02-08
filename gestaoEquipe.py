@@ -136,8 +136,8 @@ def run():
         con.commit()
         st.rerun()
 
-    caminho=os.getcwd()
-    os.chdir(caminho)  # Certifique-se de estar no diretório correto
+    # caminho=os.getcwd()
+    os.chdir('/workspaces/equipe')  # Certifique-se de estar no diretório correto
     repo = Repo('.')
     repo.git.add(update=True)
     repo.git.commit(m="Atualizando banco de dados")
