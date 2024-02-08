@@ -129,8 +129,10 @@ if atualizar:
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
     st.rerun()
-
-# st.cache_data.clear()
+    os.system("git add .")
+    os.system('git commit -m "Atualizando banco de dados"')
+    os.system("git push origin main")
+    # st.cache_data.clear()
 con.close()
 
 
