@@ -1,7 +1,6 @@
 from openpyxl import load_workbook
 from datetime import datetime
 from datetime import date
-
 import streamlit as st
 import datetime as dt
 from git import Repo
@@ -137,8 +136,8 @@ if atualizar:
     repo.git.add(update=True)
     repo.git.commit(m="Atualizando banco de dados")
     repo.git.push('origin', 'main')
+    print("Git push executado com sucesso.")
     # st.cache_data.clear()
 con.close()
-if __name__ == "__main__":
-    run()
+
 
