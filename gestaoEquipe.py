@@ -45,7 +45,7 @@ baseCompleta=executa_sql('SELECT * FROM Equipe_Completa')
 baseCompleta['RU']=baseCompleta['RU'].astype(str)
 baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0","")
 baseCompleta=baseCompleta.loc[baseCompleta['SIT. ATUAL']!='INATIVOS']
-baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
+# baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
 
 @st.cache_data
 def exibeEquipe(sit,eqp,rpt):
