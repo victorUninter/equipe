@@ -77,7 +77,7 @@ col1, col2 = st.columns([1,3])
 with col1:
     optionsSit = st.selectbox(
         'Selecione a Situação desejada',
-        ['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'])
+        ['TODOS','ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'])
     optionsEqp = st.selectbox(
         'Selecione a Equipe',
         Equipe)
