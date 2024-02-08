@@ -131,13 +131,14 @@ if atualizar:
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
     st.rerun()
-caminho=os.getcwd()
-os.chdir(caminho)  # Certifique-se de estar no diretório correto
-repo = Repo('.')
-repo.git.add(update=True)
-repo.git.commit(m="Atualizando banco de dados")
-repo.git.push('origin', 'main')
+    caminho=os.getcwd()
+    os.chdir(caminho)  # Certifique-se de estar no diretório correto
+    repo = Repo('.')
+    repo.git.add(update=True)
+    repo.git.commit(m="Atualizando banco de dados")
+    repo.git.push('origin', 'main')
     # st.cache_data.clear()
 con.close()
-
+if __name__ == "__main__":
+    run()
 
