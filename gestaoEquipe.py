@@ -50,8 +50,28 @@ def atualizaBase(con,edited_df,baseCompleta):
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
 
-    st.rerun()
+def auto_commit():
+    try:
+        # Certifique-se de estar no diretório correto
+        caminho = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(caminho)
 
+        # Inicializa o repositório Git
+        repo = Repo('.')
+
+        # Adiciona todas as alterações ao staging
+        repo.git.add(update=True)
+
+        # Faz o commit com uma mensagem automática
+        repo.git.commit(m="Atualizando banco de dados")
+
+        # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
+        repo.git.push('origin', 'main')
+
+        print("Git push executado com sucesso.")
+    except Exception as e:
+        print(f"Erro ao realizar commits automáticos: {e}") 
+              
 def run():
     caminho_Banco = "BDEquipe.db"
     con = sqlite3.connect(caminho_Banco)
@@ -138,7 +158,9 @@ def run():
 
     if atualizar:
         atualizaBase(con,edited_df,baseCompleta)
-        
+        os.system("python auto_commit.py")
+    # Rerun do aplicativo Streamlit
+        st.rerun()
     # caminho=os.getcwd()
     # caminho_arquivo = os.path.join(caminho, novo_arquivo)  # Certifique-se de estar no diretório correto
     # repo = Repo('.')
@@ -152,3 +174,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    auto_commit()
