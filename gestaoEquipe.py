@@ -65,7 +65,7 @@ def exibeEquipe(sit,eqp,rpt):
     qtdeColabs=len(DfEqpFiltro)
     return DfEqpFiltro,qtdeColabs
 
-Situacao=list(baseCompleta['SIT. ATUAL'].unique())
+Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU']
 Situacao.insert(0,'TODOS')
 Equipe=list(baseCompleta['EQUIPE'].unique())
 Equipe.insert(0,'TODOS')
@@ -77,7 +77,7 @@ col1, col2 = st.columns([1,3])
 with col1:
     optionsSit = st.selectbox(
         'Selecione a Situação desejada',
-        ['TODOS','ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'])
+        Situacao)
     optionsEqp = st.selectbox(
         'Selecione a Equipe',
         Equipe)
