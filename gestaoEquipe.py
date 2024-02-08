@@ -131,8 +131,8 @@ if atualizar:
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
     st.rerun()
-    caminho=os.getcwd()
-    os.chdir(caminho)  # Certifique-se de estar no diretório correto
+    # caminho=os.getcwd()
+    # os.chdir(caminho)  # Certifique-se de estar no diretório correto
     repo = Repo('.')
     repo.git.add(update=True)
     repo.git.commit(m="Atualizando banco de dados")
