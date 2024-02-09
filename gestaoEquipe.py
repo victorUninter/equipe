@@ -34,7 +34,7 @@ def atualizaBase(edited_df, baseCompleta):
     
     # Salva o DataFrame como arquivo JSON localmente
     file_path = "basejson.json"
-    baseCompleta.to_json(file_path, orient='records', lines=True)
+    baseCompleta.to_json(file_path, orient='columns')
 
     # Retorna o caminho do arquivo
     return file_path
@@ -68,20 +68,13 @@ def auto_commit(token, owner, repo, branch, file_path, content, commit_message):
         st.error(f"Erro ao realizar commits automáticos: {e}")
 
 def run():
-    # st.write("Diretório de trabalho atual:", os.getcwd())
-    
-# Leitura do arquivo JSON
+
     file_path = "basejson.json"
     with open(file_path, 'r') as json_file:
-        # Carregar todas as linhas do JSON como uma lista
-        data_lines = json_file.readlines()
-    
-    # Concatenar as linhas JSON na string json_data
-    json_data = "[" + ",".join(data_lines) + "]"
-    
-    # Agora, json_data contém todos os dados JSON como uma string
-    baseCompleta = pd.read_json(StringIO(json_data), orient='records')
-    
+        data = json.load(json_file)
+
+    baseCompleta = pd.DataFrame(data)
+
     # Verificar se a coluna RU existe antes de acessá-la
     if 'RU' in baseCompleta.columns:
         baseCompleta['RU'] = baseCompleta['RU'].astype(str)
@@ -160,7 +153,7 @@ def run():
         content = pd.read_json(arquivo_json, orient='records', lines=True).to_json(orient='records', lines=True)
         commit_message = "Atualização via API do GitHub."
         git_token = "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"
-        auto_commit(git_token, "victorUninter", "Equipe", "main", file_path, content, commit_message)
+        auto_commit(git_token, "victorUninter", "equipe", "main", file_path, content, commit_message)
         st.success('Atualizado com sucesso!', icon="✅")
         st.rerun()
 
