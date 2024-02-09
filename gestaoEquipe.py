@@ -57,22 +57,24 @@ def auto_commit():
 
         # Inicializa o repositório Git
         repo = Repo('.')
-        repo.git.config('user.email', 'victor.d@uninter.com')
-        repo.git.config('user.name', 'victorUninter')
-        
-        # Adiciona todas as alterações ao staging
-        repo.git.add(all=True)
 
-        # Faz o commit com uma mensagem automática
-        repo.git.commit(m="Atualizando banco de dados")
+        # Verifica se há alterações para commitar
+        if repo.is_dirty(untracked_files=True):
+            # Adiciona todas as alterações ao staging
+            repo.git.add(all=True)
 
-        # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
-        repo.git.push('origin', 'main')
+            # Faz o commit com uma mensagem automática
+            repo.git.commit(m="Atualizando banco de dados")
 
-        st.write("Git push executado com sucesso.")
+            # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
+            repo.git.push('origin', 'main')
+
+            st.write("Git push executado com sucesso.")
+        else:
+            st.write("Nenhuma alteração para commitar.")
     except Exception as e:
-        st.write(f"Erro ao realizar commits automáticos: {e}") 
-              
+        st.write(f"Erro ao realizar commits automáticos: {e}")
+         
 def run():
     caminho_Banco = "BDEquipe.db"
     con = sqlite3.connect(caminho_Banco)
