@@ -76,6 +76,7 @@ def auto_commit():
         st.write(f"Erro ao realizar commits automáticos: {e}")
          
 def run():
+    st.write("Diretório de trabalho atual:", os.getcwd())
     caminho_Banco = "BDEquipe.db"
     con = sqlite3.connect(caminho_Banco)
     cur = con.cursor()
