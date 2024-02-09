@@ -57,7 +57,7 @@ def auto_commit():
 
         # Inicializa o repositório Git
         repo = Repo('.')
-        repo.git.config(user_email="victor.d@uninter.com", user_name="victorUninter")
+        repo.git.config(user.email="victor.d@uninter.com", user.name="victorUninter")
         # Adiciona todas as alterações ao staging
         repo.git.add(update=True)
 
