@@ -68,9 +68,9 @@ def auto_commit():
         # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
         repo.git.push('origin', 'main')
 
-        print("Git push executado com sucesso.")
+        st.write("Git push executado com sucesso.")
     except Exception as e:
-        print(f"Erro ao realizar commits automáticos: {e}") 
+        st.write(f"Erro ao realizar commits automáticos: {e}") 
               
 def run():
     caminho_Banco = "BDEquipe.db"
