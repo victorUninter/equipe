@@ -1,4 +1,4 @@
-from openpyxl import load_workbook
+    from openpyxl import load_workbook
 from streamlit.logger import get_logger
 from datetime import datetime
 from datetime import date
@@ -58,6 +58,10 @@ def auto_commit():
         # Inicializa o repositório Git
         repo = Repo('.')
 
+        # Configuração do Git (nome de usuário e e-mail)
+        repo.git.config('user.email', 'seu-email@example.com')
+        repo.git.config('user.name', 'Seu Nome')
+
         # Verifica se há alterações para commitar
         if repo.is_dirty(untracked_files=True):
             # Adiciona todas as alterações ao staging
@@ -69,11 +73,13 @@ def auto_commit():
             # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
             repo.git.push('origin', 'main')
 
-            st.write("Git push executado com sucesso.")
+            st.success("Git push executado com sucesso.")
         else:
-            st.write("Nenhuma alteração para commitar.")
+            st.warning("Nenhuma alteração para commitar.")
+    except GitCommandError as git_error:
+        st.error(f"Erro ao realizar commits automáticos: {git_error}")
     except Exception as e:
-        st.write(f"Erro ao realizar commits automáticos: {e}")
+        st.error(f"Erro desconhecido: {e}")
          
 def run():
     st.write("Diretório de trabalho atual:", os.getcwd())
