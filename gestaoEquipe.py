@@ -169,7 +169,7 @@ def run():
 
     if atualizar:
         atualizaBase(con,edited_df,baseCompleta)
-        os.system("python auto_commit.py")
+        # os.system("python auto_commit.py")
     # Rerun do aplicativo Streamlit
         st.rerun()
     # caminho=os.getcwd()
