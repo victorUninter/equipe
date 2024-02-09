@@ -1,5 +1,6 @@
 from openpyxl import load_workbook
 from streamlit.logger import get_logger
+from git.exc import GitCommandError
 from datetime import datetime
 from datetime import date
 import streamlit as st
