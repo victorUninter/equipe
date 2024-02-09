@@ -72,7 +72,7 @@ def auto_commit(git_token):
             repo.git.commit(m="Atualizando banco de dados")
 
             # Construa a URL do repositório com o token
-            repo_url = "https://<seu-username>:<seu-token>@github.com/victorUninter/equipe.git"
+            repo_url = "https://<victorUninter>:<git_token>@github.com/victorUninter/equipe.git"
 
             # Empurra as alterações para o repositório remoto
             repo.git.push(repo_url, 'main')
