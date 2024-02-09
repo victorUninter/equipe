@@ -1,25 +1,17 @@
-from openpyxl import load_workbook
-from streamlit.logger import get_logger
-from git.exc import GitCommandError
-from datetime import datetime
-from datetime import date
+import json
+import requests
 import streamlit as st
-from streamlit.connections import SQLConnection
-import datetime as dt
-from git import Repo
-import pandas as pd 
-import sqlite3
-import time
-import sys
+import pandas as pd
+from io import StringIO
+from streamlit.logger import get_logger
 import os
-import re
 
 st.set_page_config(
     page_title="Gestão Equipe",
-    # page_icon=,
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
 col1,col2,col3=st.columns([2,5,1])
 with col1:
     st.image("marca-uninter-horizontal.png", use_column_width=True)
@@ -28,87 +20,73 @@ with col2:
 
 LOGGER = get_logger(__name__)
 
-def atualizaBase(con,edited_df,baseCompleta):
-    # Garanta que o índice de 'edited_df' seja exclusivo
+def atualizaBase(edited_df, baseCompleta):
     edited_df = edited_df.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
-
-    # Crie uma cópia da baseCompleta filtrada
     base_filtrada_copy = baseCompleta.loc[baseCompleta['Nome_Colaborador'].isin(edited_df['Nome_Colaborador'])].copy()
 
     for i, col in enumerate(edited_df.columns):
         if i > 0:
-            # Atualize apenas a cópia filtrada
             base_filtrada_copy[col] = base_filtrada_copy['Nome_Colaborador'].map(
                 edited_df.set_index('Nome_Colaborador')[col])
 
-    # Combine as informações atualizadas de volta à baseCompleta
     baseCompleta.update(base_filtrada_copy, overwrite=True)
-
-    # Garanta que o índice de 'baseCompleta' seja exclusivo antes de salvar no SQL
     baseCompleta = baseCompleta.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
+    
+    # Salva o DataFrame como arquivo JSON localmente
+    file_path = "basejson.json"
+    baseCompleta.to_json(file_path, orient='records', lines=True)
 
-    # Salve no SQL
-    baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
+    # Retorna o caminho do arquivo
+    return file_path
 
-def auto_commit(git_token):
+def auto_commit(token, owner, repo, branch, file_path, content, commit_message):
     try:
-        # Certifique-se de estar no diretório correto
-        caminho = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(caminho)
+        api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}"
 
-        # Inicializa o repositório Git
-        repo = Repo('.')
+        headers = {
+            "Authorization": f"token {token}",
+            "Content-Type": "application/json"
+        }
 
-        # Configuração do Git (remova as configurações de usuário e e-mail)
-        # repo.git.config('user.email', 'victor.d@uninter.com')
-        # repo.git.config('user.name', 'victorUninter')
+        response = requests.get(api_url, headers=headers)
+        response_json = response.json()
 
-        # Verifica se há alterações para commitar
-        if repo.is_dirty(untracked_files=True):
-            # Adiciona todas as alterações ao staging
-            repo.git.add(all=True)
+        payload = {
+            "message": commit_message,
+            "content": content,
+            "sha": response_json['sha'],
+            "branch": branch
+        }
 
-            # Faz o commit com uma mensagem automática
-            repo.git.commit(m="Atualizando banco de dados")
+        response = requests.put(api_url, headers=headers, json=payload)
 
-            # Construa a URL do repositório com o token
-            repo_url = "https://<victorUninter>:<git_token>@github.com/victorUninter/equipe.git"
-
-            # Empurra as alterações para o repositório remoto
-            repo.git.push(repo_url, 'main')
-
-            st.success("Git push executado com sucesso.")
+        if response.status_code == 200:
+            st.success("Conteúdo do arquivo atualizado com sucesso.")
         else:
-            st.warning("Nenhuma alteração para commitar.")
+            st.error(f"Erro ao atualizar conteúdo do arquivo: {response.status_code} - {response.text}")
     except Exception as e:
         st.error(f"Erro ao realizar commits automáticos: {e}")
-         
+
 def run():
-    st.write("Diretório de trabalho atual:", os.getcwd())
-    caminho_Banco = "BDEquipe.db"
-    con = sqlite3.connect(caminho_Banco)
-    cur = con.cursor()
+    # st.write("Diretório de trabalho atual:", os.getcwd())
+    
+    # Leitura do arquivo JSON
+    file_path = "basejson.json"
+    with open(file_path, 'r') as json_file:
+        # Carregar todas as linhas do JSON como uma lista
+        data_lines = json_file.readlines()
+    
+    # Concatenar as linhas JSON na string json_data
+    json_data = "[" + ",".join(data_lines) + "]"
+    
+    # Agora, json_data contém todos os dados JSON como uma string
+    baseCompleta = pd.read_json(StringIO(json_data), orient='records')
 
-    # novabase=pd.read_excel('EQUIPE COB E TELE.xlsm')
-    # novabase=novabase.iloc[:,:8]
-    # novabase.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
-
-    @st.cache_resource
-    def executa_sql(comando):
-        cur.execute(comando)
-        resultado = cur.fetchall()
-        resultado = pd.DataFrame(resultado)
-        resultado.columns = [i[0] for i in cur.description]
-        print(resultado.shape)
-        return resultado
-
-    baseCompleta=executa_sql('SELECT * FROM Equipe_Completa')
     baseCompleta['RU']=baseCompleta['RU'].astype(str)
     baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0","")
     baseCompleta=baseCompleta.loc[baseCompleta['SIT. ATUAL']!='INATIVOS']
     # baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
 
-    @st.cache_resource
     def exibeEquipe(sit,eqp,rpt):
         if sit == 'TODOS':
             filtro_sit = baseCompleta['SIT. ATUAL'].notnull()  # Qualquer valor diferente de NaN
@@ -144,7 +122,7 @@ def run():
             'Selecione a Equipe',
             Equipe)
         optionsRpt = st.selectbox(
-            'Selecione o Resáponsável',
+            'Selecione o Responsável',
             Reporte)
         DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
         qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT. ATUAL']=='ATIVO'])
@@ -169,12 +147,15 @@ def run():
         atualizar = st.button('ATUALIZAR',type="primary")
 
     if atualizar:
-        atualizaBase(con,edited_df,baseCompleta)
+        arquivo_json = atualizaBase(edited_df, baseCompleta)
+        
+        # Adaptar conforme a estrutura do seu arquivo e suas necessidades
+        content = pd.read_json(arquivo_json, orient='records', lines=True).to_json(orient='records', lines=True)
+        commit_message = "Atualização via API do GitHub."
+        git_token = "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"
+        auto_commit(git_token, "victorUninter", "Equipe", "main", file_path, content, commit_message)
+        st.success('Atualizado com sucesso!', icon="✅")
         st.rerun()
-
-    con.close()
 
 if __name__ == "__main__":
     run()
-    git_token = "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"
-    auto_commit(git_token)
