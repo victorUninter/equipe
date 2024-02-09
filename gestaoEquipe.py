@@ -27,8 +27,10 @@ with col2:
     st.title('Gestão Equipe de Cobrança')
 
 LOGGER = get_logger(__name__)
+
 os.system("eval $(ssh-agent -s)")
-os.system("ssh-add ~/.ssh/sua-chave-privada")
+os.system("ssh-add ~/.ssh/id_rsa")
+
 def atualizaBase(con,edited_df,baseCompleta):
     # Garanta que o índice de 'edited_df' seja exclusivo
     edited_df = edited_df.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
