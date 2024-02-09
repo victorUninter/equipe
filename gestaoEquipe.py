@@ -62,10 +62,8 @@ def auto_commit(git_token):
         # Inicializa o repositório Git
         repo = Repo('.')
 
-        # Configuração do Git (nome de usuário e e-mail)
-        # repo.git.config('user.email', 'victor.d@uninter.com')
-        # repo.git.config('user.name', 'victorUninter')
-        repo_url = "https://victorUninter:<seu-git-token>@github.com/victorUninter/equipe.git"
+        # URL do repositório com o token
+        repo_url = f"https://victorUninter:{git_token}@github.com/victorUninter/equipe.git"
 
         # Verifica se há alterações para commitar
         if repo.is_dirty(untracked_files=True):
@@ -76,7 +74,7 @@ def auto_commit(git_token):
             repo.git.commit(m="Atualizando banco de dados")
 
             # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
-            repo.git.push('origin', 'main')
+            repo.git.push(repo_url, 'main')
 
             st.success("Git push executado com sucesso.")
         else:
