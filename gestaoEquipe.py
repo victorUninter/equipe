@@ -61,7 +61,7 @@ def auto_commit():
         repo.git.config('user.name', 'victorUninter')
         
         # Adiciona todas as alterações ao staging
-        repo.git.add(update=True)
+        repo.git.add(all=True)
 
         # Faz o commit com uma mensagem automática
         repo.git.commit(m="Atualizando banco de dados")
