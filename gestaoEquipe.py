@@ -176,5 +176,5 @@ def run():
 
 if __name__ == "__main__":
     run()
-    git_token = "<seu-token>"
+    git_token = "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"
     auto_commit(git_token)
