@@ -60,8 +60,8 @@ def auto_commit():
         repo = Repo('.')
 
         # Configuração do Git (nome de usuário e e-mail)
-        repo.git.config('user.email', 'seu-email@example.com')
-        repo.git.config('user.name', 'Seu Nome')
+        # repo.git.config('user.email', 'seu-email@example.com')
+        # repo.git.config('user.name', 'Seu Nome')
 
         # Verifica se há alterações para commitar
         if repo.is_dirty(untracked_files=True):
