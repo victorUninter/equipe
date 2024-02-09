@@ -53,7 +53,7 @@ def atualizaBase(con,edited_df,baseCompleta):
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
 
-def auto_commit():
+def auto_commit(git_token):
     try:
         # Certifique-se de estar no diretório correto
         caminho = os.path.dirname(os.path.abspath(__file__))
@@ -63,8 +63,9 @@ def auto_commit():
         repo = Repo('.')
 
         # Configuração do Git (nome de usuário e e-mail)
-        repo.git.config('user.email', 'victor.d@uninter.com')
-        repo.git.config('user.name', 'victorUninter')
+        # repo.git.config('user.email', 'victor.d@uninter.com')
+        # repo.git.config('user.name', 'victorUninter')
+        repo_url = "https://victorUninter:<seu-git-token>@github.com/victorUninter/equipe.git"
 
         # Verifica se há alterações para commitar
         if repo.is_dirty(untracked_files=True):
@@ -178,4 +179,5 @@ def run():
 
 if __name__ == "__main__":
     run()
-    auto_commit()
+    git_token="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"
+    auto_commit(git_token)
