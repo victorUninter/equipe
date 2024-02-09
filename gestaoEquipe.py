@@ -70,7 +70,7 @@ def auto_commit(token, owner, repo, branch, file_path, content, commit_message):
 def run():
     # st.write("Diretório de trabalho atual:", os.getcwd())
     
-    # Leitura do arquivo JSON
+# Leitura do arquivo JSON
     file_path = "basejson.json"
     with open(file_path, 'r') as json_file:
         # Carregar todas as linhas do JSON como uma lista
@@ -81,6 +81,13 @@ def run():
     
     # Agora, json_data contém todos os dados JSON como uma string
     baseCompleta = pd.read_json(StringIO(json_data), orient='records')
+    
+    # Verificar se a coluna RU existe antes de acessá-la
+    if 'RU' in baseCompleta.columns:
+        baseCompleta['RU'] = baseCompleta['RU'].astype(str)
+        # Restante do seu código...
+    else:
+        st.error("A coluna 'RU' não existe no DataFrame.")
 
     baseCompleta['RU']=baseCompleta['RU'].astype(str)
     baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0","")
