@@ -50,7 +50,7 @@ def atualizaBase(con,edited_df,baseCompleta):
     # Salve no SQL
     baseCompleta.to_sql('Equipe_Completa', con, index=False, if_exists='replace')
 
-def auto_commit():
+def auto_commit(git_token):
     try:
         # Certifique-se de estar no diretório correto
         caminho = os.path.dirname(os.path.abspath(__file__))
@@ -59,9 +59,9 @@ def auto_commit():
         # Inicializa o repositório Git
         repo = Repo('.')
 
-        # Configuração do Git (nome de usuário e e-mail)
-        repo.git.config('user.email', 'victor.d@uninter.com')
-        repo.git.config('user.name', 'victorUninter')
+        # Configuração do Git (remova as configurações de usuário e e-mail)
+        # repo.git.config('user.email', 'victor.d@uninter.com')
+        # repo.git.config('user.name', 'victorUninter')
 
         # Verifica se há alterações para commitar
         if repo.is_dirty(untracked_files=True):
@@ -71,16 +71,17 @@ def auto_commit():
             # Faz o commit com uma mensagem automática
             repo.git.commit(m="Atualizando banco de dados")
 
-            # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
-            repo.git.push('origin', 'main')
+            # Construa a URL do repositório com o token
+            repo_url = "https://<seu-username>:<seu-token>@github.com/victorUninter/equipe.git"
+
+            # Empurra as alterações para o repositório remoto
+            repo.git.push(repo_url, 'main')
 
             st.success("Git push executado com sucesso.")
         else:
             st.warning("Nenhuma alteração para commitar.")
-    except GitCommandError as git_error:
-        st.error(f"Erro ao realizar commits automáticos: {git_error}")
     except Exception as e:
-        st.error(f"Erro desconhecido: {e}")
+        st.error(f"Erro ao realizar commits automáticos: {e}")
          
 def run():
     st.write("Diretório de trabalho atual:", os.getcwd())
@@ -175,4 +176,5 @@ def run():
 
 if __name__ == "__main__":
     run()
-    auto_commit()
+    git_token = "<seu-token>"
+    auto_commit(git_token)
