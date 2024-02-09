@@ -6,7 +6,6 @@ import streamlit as st
 from streamlit.connections import SQLConnection
 import datetime as dt
 from git import Repo
-import sqlalchemy
 import pandas as pd 
 import sqlite3
 import time
@@ -58,9 +57,11 @@ def auto_commit():
 
         # Inicializa o repositório Git
         repo = Repo('.')
-
+        repo.git.config('user.email', 'victor.d@uninter.com')
+        repo.git.config('user.name', 'victorUninter')
+        
         # Adiciona todas as alterações ao staging
-        repo.git.add(update=True)
+        repo.git.add(all=True)
 
         # Faz o commit com uma mensagem automática
         repo.git.commit(m="Atualizando banco de dados")
@@ -68,9 +69,9 @@ def auto_commit():
         # Empurra as alterações para o repositório remoto (substitua 'main' pelo nome do seu branch)
         repo.git.push('origin', 'main')
 
-        print("Git push executado com sucesso.")
+        st.write("Git push executado com sucesso.")
     except Exception as e:
-        print(f"Erro ao realizar commits automáticos: {e}") 
+        st.write(f"Erro ao realizar commits automáticos: {e}") 
               
 def run():
     caminho_Banco = "BDEquipe.db"
