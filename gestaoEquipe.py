@@ -169,18 +169,8 @@ def run():
 
     if atualizar:
         atualizaBase(con,edited_df,baseCompleta)
-        # os.system("python auto_commit.py")
-    # Rerun do aplicativo Streamlit
         st.rerun()
-    # caminho=os.getcwd()
-    # caminho_arquivo = os.path.join(caminho, novo_arquivo)  # Certifique-se de estar no diretório correto
-    # repo = Repo('.')
-    # repo.git.add(update=True)
-    # repo.git.commit(m="Atualizando banco de dados")
-    # repo.git.push('origin', 'main')
-    # repo.git.push('origin', 'main')
-    # print("Git push executado com sucesso.")
-        # st.cache_data.clear()
+
     con.close()
 
 if __name__ == "__main__":
