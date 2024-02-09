@@ -6,7 +6,6 @@ import streamlit as st
 from streamlit.connections import SQLConnection
 import datetime as dt
 from git import Repo
-import sqlalchemy
 import pandas as pd 
 import sqlite3
 import time
