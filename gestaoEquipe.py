@@ -175,4 +175,3 @@ def run():
 if __name__ == "__main__":
     run()
     auto_commit()
-/workspaces/equipe/gestaoEquipe.py
