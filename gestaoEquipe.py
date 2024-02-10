@@ -67,10 +67,10 @@ def atualizaBanco(edited_df):
 
             # Confirma as alterações no banco de dados
             conn.commit()
-            print(f"Operação concluída na tabela {table_name}.")
+            st.write(f"Operação concluída na tabela {table_name}.")
 
     except Error as e:
-        print(f"Erro: {e}")
+        st.write(f"Erro: {e}")
 
     finally:
         # Fecha a conexão ao banco de dados
