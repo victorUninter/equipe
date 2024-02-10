@@ -1,8 +1,8 @@
+python=3.10.13
 streamlit
 pandas
 numpy
-altair
-xlrd
 openpyxl
 streamlit_analytics
-mysql-connector-python
+sqlalchemy
+os
