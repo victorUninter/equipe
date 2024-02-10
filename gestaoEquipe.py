@@ -3,6 +3,9 @@ import pandas as pd
 import streamlit as st
 import pandas as pd
 import os
+from streamlit.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 st.set_page_config(
     page_title="Gestão Equipe",
