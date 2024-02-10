@@ -1,6 +1,5 @@
 streamlit
 pandas
-mysql
 numpy
 altair
 xlrd
