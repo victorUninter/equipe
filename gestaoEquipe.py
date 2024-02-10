@@ -1,10 +1,24 @@
-import json
-import requests
+from sqlalchemy import create_engine
+import pandas as pd
 import streamlit as st
 import pandas as pd
 import os
-import mysql.connector as db
-from mysql.connector import Error
+
+
+st.set_page_config(
+    page_title="Gestão Equipe",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# banco de dados
+
+col1,col2=st.columns([3,10])
+with col1:
+    st.image('marca-uninter-horizontal.png')
+with col2:
+    st.title('GESTÃO EQUIPE DE COBRANÇA')
+
 
 config = {
   'host': 'roundhouse.proxy.rlwy.net',
@@ -14,73 +28,24 @@ config = {
   'database': 'railway'
 }
 
-st.set_page_config(
-    page_title="Gestão Equipe",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Cria a string de conexão
+conn = f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
 
-def executa_sql(comando):
-    # Conecta ao banco de dados MySQL
-    conn = db.connect(**config)
-    cursor = conn.cursor()
-    cursor.execute(comando)
-    resultado = cursor.fetchall()
-    resultado = pd.DataFrame(resultado)
-    resultado.columns = [i[0] for i in cursor.description]
-    cursor.close()
-    conn.close()
-    return resultado
+# Cria o objeto de conexão usando create_engine
+engine = create_engine(conn)
 
-def atualizaBanco(edited_df):
-    try:
-        # Conecta ao banco de dados MySQL
-        conn = mysql.connector.connect(**config)
+def atualizaBanco(edited_df,baseCompleta):
 
-        if conn.is_connected():
-            cursor = conn.cursor()
-
-            table_name = 'Equipe_Completa'
-
-            for _, row in edited_df.iterrows():
-                # Verifica se o registro já existe na tabela
-                check_query = f"SELECT COUNT(*) FROM {table_name} WHERE Nome_Colaborador = %s"
-                cursor.execute(check_query, (row['Nome_Colaborador'],))
-                existe = cursor.fetchone()[0]
-
-                if existe:
-                    # Atualiza o registro se ele existir
-                    update_query = (f"UPDATE {table_name} SET "
-                                    "RU = %s, MATRICULA = %s, CARGO = %s, REPORTE = %s, EQUIPE = %s, "
-                                    "SIT_ATUAL = %s, DATA_RETORNO = %s WHERE Nome_Colaborador = %s")
-                    valores = (row['RU'], row['MATRICULA'], row['CARGO'], row['REPORTE'], row['EQUIPE'],
-                               row['SIT_ATUAL'], row['DATA_RETORNO'], row['Nome_Colaborador'])
-                    cursor.execute(update_query, valores)
-                else:
-                    # Insere um novo registro se não existir
-                    insert_query = (f"INSERT INTO {table_name} "
-                                    "(Nome_Colaborador, RU, MATRICULA, CARGO, REPORTE, EQUIPE, "
-                                    "SIT_ATUAL, DATA_RETORNO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
-                    valores = (row['Nome_Colaborador'], row['RU'], row['MATRICULA'], row['CARGO'],
-                               row['REPORTE'], row['EQUIPE'], row['SIT_ATUAL'], row['DATA_RETORNO'])
-                    cursor.execute(insert_query, valores)
-
-            # Confirma as alterações no banco de dados
-            conn.commit()
-            st.write(f"Operação concluída na tabela {table_name}.")
-
-    except Error as e:
-        st.write(f"Erro: {e}")
-
-    finally:
-        # Fecha a conexão ao banco de dados
-        if 'conn' in locals() and conn.is_connected():
-            cursor.close()
-            conn.close()
+    baseconcat=pd.concat([edited_df,baseCompleta])
+    baseconcat=baseconcat.drop_duplicates(subset='id')
+    baseconcat.to_sql('Equipe_Completa', con=engine, if_exists='replace', index=False)
+    engine.dispose()
+    return 
 
 def run():
     
-    baseCompleta=executa_sql('SELECT * FROM Equipe_Completa')
+    querySel='SELECT * FROM Equipe_Completa'
+    baseCompleta=pd.read_sql(querySel,engine)
 
     # Convertendo colunas para os tipos desejados
     baseCompleta['RU'] = baseCompleta['RU'].astype(str)
@@ -88,7 +53,6 @@ def run():
 
     # Filtrando linhas com 'SIT. ATUAL' diferente de 'INATIVOS'
     baseCompleta = baseCompleta.loc[baseCompleta['SIT_ATUAL'] != 'INATIVOS'].reset_index(drop=True)
-    # baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
 
     def exibeEquipe(sit,eqp,rpt):
         if sit == 'TODOS':
@@ -150,8 +114,9 @@ def run():
         atualizar = st.button('ATUALIZAR',type="primary")
 
     if atualizar:
-        atualizaBanco(edited_df)
+        atualizaBanco(edited_df,baseCompleta)
         st.rerun()
+        st.success('Atualizado com sucesso!', icon="✅")
 
 if __name__ == "__main__":
     run()
