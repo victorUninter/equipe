@@ -3,6 +3,7 @@ import requests
 import streamlit as st
 import pandas as pd
 import os
+import mysql
 import mysql.connector as db
 from mysql.connector import Error
 
