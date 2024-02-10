@@ -4,7 +4,6 @@ import streamlit as st
 import pandas as pd
 import os
 
-
 st.set_page_config(
     page_title="Gestão Equipe",
     layout="wide",
@@ -18,7 +17,6 @@ with col1:
     st.image('marca-uninter-horizontal.png')
 with col2:
     st.title('GESTÃO EQUIPE DE COBRANÇA')
-
 
 config = {
   'host': 'roundhouse.proxy.rlwy.net',
@@ -115,8 +113,9 @@ def run():
 
     if atualizar:
         atualizaBanco(edited_df,baseCompleta)
-        st.rerun()
         st.success('Atualizado com sucesso!', icon="✅")
+        st.rerun()
+        
 
 if __name__ == "__main__":
     run()
