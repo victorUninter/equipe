@@ -2,9 +2,17 @@ import json
 import requests
 import streamlit as st
 import pandas as pd
-from io import StringIO
-from streamlit.logger import get_logger
 import os
+import mysql.connector
+from mysql.connector import Error
+
+config = {
+  'host': 'roundhouse.proxy.rlwy.net',
+  'user': 'root',
+  'port':'26496',
+  'password': '2b632BA2FhGFeFb4BHdcdC3G6B6-6-3d',
+  'database': 'railway'
+}
 
 st.set_page_config(
     page_title="Gestão Equipe",
@@ -12,86 +20,81 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-col1,col2,col3=st.columns([2,5,1])
-with col1:
-    st.image("marca-uninter-horizontal.png", use_column_width=True)
-with col2:
-    st.title('Gestão Equipe de Cobrança')
+def executa_sql(comando):
+    # Conecta ao banco de dados MySQL
+    conn = mysql.connector.connect(**config)
+    cursor = conn.cursor()
+    cursor.execute(comando)
+    resultado = cursor.fetchall()
+    resultado = pd.DataFrame(resultado)
+    resultado.columns = [i[0] for i in cursor.description]
+    cursor.close()
+    conn.close()
+    return resultado
 
-LOGGER = get_logger(__name__)
-
-def atualizaBase(edited_df, baseCompleta):
-    edited_df = edited_df.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
-    base_filtrada_copy = baseCompleta.loc[baseCompleta['Nome_Colaborador'].isin(edited_df['Nome_Colaborador'])].copy()
-
-    for i, col in enumerate(edited_df.columns):
-        if i > 0:
-            base_filtrada_copy[col] = base_filtrada_copy['Nome_Colaborador'].map(
-                edited_df.set_index('Nome_Colaborador')[col])
-
-    baseCompleta.update(base_filtrada_copy, overwrite=True)
-    baseCompleta = baseCompleta.drop_duplicates(subset='Nome_Colaborador').reset_index(drop=True)
-    
-    # Salva o DataFrame como arquivo JSON localmente
-    file_path = "basejson.json"
-    baseCompleta.to_json(file_path, orient='columns')
-
-    # Retorna o caminho do arquivo
-    return file_path
-
-def auto_commit(token, owner, repo, branch, file_path, content, commit_message):
+def atualizaBanco(edited_df):
     try:
-        api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}"
+        # Conecta ao banco de dados MySQL
+        conn = mysql.connector.connect(**config)
 
-        headers = {
-            "Authorization": f"token {token}",
-            "Content-Type": "application/json"
-        }
+        if conn.is_connected():
+            cursor = conn.cursor()
 
-        response = requests.get(api_url, headers=headers)
-        response_json = response.json()
+            table_name = 'Equipe_Completa'
 
-        payload = {
-            "message": commit_message,
-            "content": content,
-            "sha": response_json['sha'],
-            "branch": branch
-        }
+            for _, row in edited_df.iterrows():
+                # Verifica se o registro já existe na tabela
+                check_query = f"SELECT COUNT(*) FROM {table_name} WHERE Nome_Colaborador = %s"
+                cursor.execute(check_query, (row['Nome_Colaborador'],))
+                existe = cursor.fetchone()[0]
 
-        response = requests.put(api_url, headers=headers, json=payload)
+                if existe:
+                    # Atualiza o registro se ele existir
+                    update_query = (f"UPDATE {table_name} SET "
+                                    "RU = %s, MATRICULA = %s, CARGO = %s, REPORTE = %s, EQUIPE = %s, "
+                                    "SIT_ATUAL = %s, DATA_RETORNO = %s WHERE Nome_Colaborador = %s")
+                    valores = (row['RU'], row['MATRICULA'], row['CARGO'], row['REPORTE'], row['EQUIPE'],
+                               row['SIT_ATUAL'], row['DATA_RETORNO'], row['Nome_Colaborador'])
+                    cursor.execute(update_query, valores)
+                else:
+                    # Insere um novo registro se não existir
+                    insert_query = (f"INSERT INTO {table_name} "
+                                    "(Nome_Colaborador, RU, MATRICULA, CARGO, REPORTE, EQUIPE, "
+                                    "SIT_ATUAL, DATA_RETORNO) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)")
+                    valores = (row['Nome_Colaborador'], row['RU'], row['MATRICULA'], row['CARGO'],
+                               row['REPORTE'], row['EQUIPE'], row['SIT_ATUAL'], row['DATA_RETORNO'])
+                    cursor.execute(insert_query, valores)
 
-        if response.status_code == 200:
-            st.success("Conteúdo do arquivo atualizado com sucesso.")
-        else:
-            st.error(f"Erro ao atualizar conteúdo do arquivo: {response.status_code} - {response.text}")
-    except Exception as e:
-        st.error(f"Erro ao realizar commits automáticos: {e}")
+            # Confirma as alterações no banco de dados
+            conn.commit()
+            print(f"Operação concluída na tabela {table_name}.")
+
+    except Error as e:
+        print(f"Erro: {e}")
+
+    finally:
+        # Fecha a conexão ao banco de dados
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 def run():
+    
+    baseCompleta=executa_sql('SELECT * FROM Equipe_Completa')
 
-    file_path = "basejson.json"
-    with open(file_path, 'r') as json_file:
-        data = json.load(json_file)
+    # Convertendo colunas para os tipos desejados
+    baseCompleta['RU'] = baseCompleta['RU'].astype(str)
+    baseCompleta['MATRICULA'] = baseCompleta['MATRICULA'].astype(str).str.replace(".0", "")
 
-    baseCompleta = pd.DataFrame(data)
-
-    # Verificar se a coluna RU existe antes de acessá-la
-    if 'RU' in baseCompleta.columns:
-        baseCompleta['RU'] = baseCompleta['RU'].astype(str)
-        # Restante do seu código...
-    else:
-        st.error("A coluna 'RU' não existe no DataFrame.")
-
-    baseCompleta['RU']=baseCompleta['RU'].astype(str)
-    baseCompleta['MATRICULA']=baseCompleta['MATRICULA'].astype(str).str.replace(".0","")
-    baseCompleta=baseCompleta.loc[baseCompleta['SIT. ATUAL']!='INATIVOS']
+    # Filtrando linhas com 'SIT. ATUAL' diferente de 'INATIVOS'
+    baseCompleta = baseCompleta.loc[baseCompleta['SIT_ATUAL'] != 'INATIVOS'].reset_index(drop=True)
     # baseCompleta['DATA_RETORNO']=pd.to_datetime(baseCompleta['DATA_RETORNO']).dt.strftime("%d/%m/%Y")
 
     def exibeEquipe(sit,eqp,rpt):
         if sit == 'TODOS':
-            filtro_sit = baseCompleta['SIT. ATUAL'].notnull()  # Qualquer valor diferente de NaN
+            filtro_sit = baseCompleta['SIT_ATUAL'].notnull()  # Qualquer valor diferente de NaN
         else:
-            filtro_sit = baseCompleta['SIT. ATUAL'] == sit
+            filtro_sit = baseCompleta['SIT_ATUAL'] == sit
         if eqp == 'TODOS':
             filtro_eqp = baseCompleta['EQUIPE'].notnull()  # Qualquer valor diferente de NaN
         else:
@@ -105,7 +108,7 @@ def run():
         qtdeColabs=len(DfEqpFiltro)
         return DfEqpFiltro,qtdeColabs
 
-    Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU']
+    Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO']
     Situacao.insert(0,'TODOS')
     Equipe=list(baseCompleta['EQUIPE'].unique())
     Equipe.insert(0,'TODOS')
@@ -122,10 +125,10 @@ def run():
             'Selecione a Equipe',
             Equipe)
         optionsRpt = st.selectbox(
-            'Selecione o Responsável',
+            'Selecione o Resáponsável',
             Reporte)
         DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
-        qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT. ATUAL']=='ATIVO'])
+        qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT_ATUAL']=='ATIVO'])
         dif=qtdAtivos-qtdeColabs
         col1.metric("Total de Colaboradores",qtdeColabs,dif)
         col1.metric("Ativos",value=qtdAtivos)
@@ -134,11 +137,11 @@ def run():
         edited_df = st.data_editor(DfEqpFiltro,
                                 hide_index=True,
                                 column_config={
-                                    "SIT. ATUAL": st.column_config.SelectboxColumn(
+                                    "SIT_ATUAL": st.column_config.SelectboxColumn(
                                         "SIT. ATUAL",
                                         help="Situação do Colaborador",
                                         width="None",
-                                        options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU'],
+                                        options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO'],
                                         required=True,
                                     )
                                 },
@@ -147,14 +150,7 @@ def run():
         atualizar = st.button('ATUALIZAR',type="primary")
 
     if atualizar:
-        arquivo_json = atualizaBase(edited_df, baseCompleta)
-        
-        # Adaptar conforme a estrutura do seu arquivo e suas necessidades
-        content = pd.read_json(arquivo_json, orient='records', lines=True).to_json(orient='records', lines=True)
-        commit_message = "Atualização via API do GitHub."
-        git_token = "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"
-        auto_commit(git_token, "victorUninter", "equipe", "main", file_path, content, commit_message)
-        st.success('Atualizado com sucesso!', icon="✅")
+        atualizaBanco(edited_df)
         st.rerun()
 
 if __name__ == "__main__":
