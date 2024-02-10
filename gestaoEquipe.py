@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 import pandas as pd
 import os
-import mysql.connector
+import mysql.connector as db
 from mysql.connector import Error
 
 config = {
@@ -22,7 +22,7 @@ st.set_page_config(
 
 def executa_sql(comando):
     # Conecta ao banco de dados MySQL
-    conn = mysql.connector.connect(**config)
+    conn = db.connect(**config)
     cursor = conn.cursor()
     cursor.execute(comando)
     resultado = cursor.fetchall()
