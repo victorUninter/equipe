@@ -108,7 +108,7 @@ def run():
                                         width="None",
                                         options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO'],
                                         required=True,
-                                        disabled=['id','Nome_Colaborador','RU','MATRICULA','CARGO']
+                                        disabled=['EQUIPE','SIT_ATUAL','DATA_RETORNO']
                                     )
                                 },
                                 num_rows="dynamic"
