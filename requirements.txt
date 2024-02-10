@@ -6,3 +6,4 @@ altair
 xlrd
 openpyxl
 streamlit_analytics
+mysql-connector
