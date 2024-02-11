@@ -121,8 +121,6 @@ def run():
     if atualizar:
         atualizaBanco(edited_df,baseCompleta)
         st.success('Atualizado com sucesso!', icon="✅")
-        st.rerun()
         
-
 if __name__ == "__main__":
     run()
