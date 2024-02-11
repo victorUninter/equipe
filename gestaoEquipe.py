@@ -94,7 +94,7 @@ def run():
             'Selecione a Equipe',
             Equipe)
         optionsRpt = st.selectbox(
-            'Selecione o Resáponsável',
+            'Selecione o Responsável',
             Reporte)
         DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
         qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT_ATUAL']=='ATIVO'])
