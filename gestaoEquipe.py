@@ -27,9 +27,9 @@ load_dotenv()
 
 config = {
   'host': 'roundhouse.proxy.rlwy.net',
-  'user': 'root',
+  'user': os.getenv("MYSQLUSER"),
   'port':'26496',
-  'password': os.getenv("DB_PASSWORD"),
+  'password': os.getenv("MYSQLPASSWORD"),
   'database': 'railway'
 }
 
