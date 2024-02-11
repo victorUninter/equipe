@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 import pandas as pd
 import streamlit as st
 import pandas as pd
+from dotenv import load_dotenv
 import os
 from streamlit.logger import get_logger
 
@@ -21,11 +22,14 @@ with col1:
 with col2:
     st.title('GESTÃO EQUIPE DE COBRANÇA')
 
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
+
 config = {
   'host': 'roundhouse.proxy.rlwy.net',
   'user': 'root',
   'port':'26496',
-  'password': '2b632BA2FhGFeFb4BHdcdC3G6B6-6-3d',
+  'password': os.getenv("DB_PASSWORD"),
   'database': 'railway'
 }
 
