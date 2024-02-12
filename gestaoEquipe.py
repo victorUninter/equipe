@@ -39,6 +39,11 @@ conn = f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['h
 # Cria o objeto de conexão usando create_engine
 engine = create_engine(conn)
 
+@st.cache(allow_output_mutation=True)
+def load_data():
+    querySel = 'SELECT * FROM Equipe_Completa'
+    return pd.read_sql(querySel, engine)
+
 def atualizaBanco(edited_df,baseCompleta):
 
     baseconcat=pd.concat([edited_df,baseCompleta])
@@ -49,8 +54,7 @@ def atualizaBanco(edited_df,baseCompleta):
 
 def run():
     
-    querySel='SELECT * FROM Equipe_Completa'
-    baseCompleta=pd.read_sql(querySel,engine)
+    baseCompleta = load_data()
 
     # Convertendo colunas para os tipos desejados
     baseCompleta['RU'] = baseCompleta['RU'].astype(str)
@@ -132,6 +136,7 @@ def run():
                     st.success('Atualizado com sucesso!', icon="✅")
                 else:
                     st.warning("Matrícula inválida ou processo cancelado.")
+
     # if atualizar:
     #     atualizaBanco(edited_df,baseCompleta)
     #     st.success('Atualizado com sucesso!', icon="✅")
