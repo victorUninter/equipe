@@ -39,7 +39,6 @@ conn = f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['h
 # Cria o objeto de conexão usando create_engine
 engine = create_engine(conn)
 
-@st.cache
 def load_data():
     querySel = 'SELECT * FROM Equipe_Completa'
     return pd.read_sql(querySel, engine)
@@ -53,7 +52,6 @@ def atualizaBanco(edited_df,baseCompleta):
     return baseconcat 
 
 def run():
-    
     baseCompleta = load_data()
 
     # Convertendo colunas para os tipos desejados
