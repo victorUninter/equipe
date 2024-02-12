@@ -45,7 +45,7 @@ def atualizaBanco(edited_df,baseCompleta):
     baseconcat=baseconcat.drop_duplicates(subset='id')
     baseconcat.to_sql('Equipe_Completa', con=engine, if_exists='replace', index=False)
     engine.dispose()
-    return 
+    return baseconcat 
 
 def run():
     
@@ -118,20 +118,22 @@ def run():
                                 )
         
         # atualizar = st.button('ATUALIZAR',type="primary")
-            # Verifica se o botão de atualização foi clicado
-        if st.button("ATUALIZAR", key="atualizar_button",type="primary"):
+        # Verifica se o botão de atualização foi clicado
+        if st.button("ATUALIZAR", key="atualizar_button", type="primary"):
             with st.form(key='confirm_form'):
                 matricula = st.text_input("Digite sua matrícula:")
                 confirmar = st.form_submit_button("Confirmar")
-    
+
                 if confirmar:
                     matribase = len(baseCompleta[baseCompleta['MATRICULA'].str.contains(str(matricula))])
-    
+
                     if matribase >= 1:
-                        atualizaBanco(edited_df, baseCompleta)
+                        # Atualiza a variável global baseCompleta
+                        baseCompleta = atualizaBanco(edited_df, baseCompleta)
                         st.success('Atualizado com sucesso!', icon="✅")
                     else:
                         st.warning("Matrícula inválida ou processo cancelado.")
+
     # if atualizar:
     #     atualizaBanco(edited_df,baseCompleta)
     #     st.success('Atualizado com sucesso!', icon="✅")
