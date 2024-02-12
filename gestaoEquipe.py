@@ -39,7 +39,7 @@ conn = f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['h
 # Cria o objeto de conexão usando create_engine
 engine = create_engine(conn)
 
-@st.cache(allow_output_mutation=True)
+@st.cache
 def load_data():
     querySel = 'SELECT * FROM Equipe_Completa'
     return pd.read_sql(querySel, engine)
