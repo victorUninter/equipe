@@ -116,21 +116,21 @@ def run():
                                 },
                                 num_rows="dynamic"
                                 )
-        # atualizar = st.button('ATUALIZAR',type="primary")
-            # Verifica se o botão de atualização foi clicado
-        if st.button("ATUALIZAR", key="atualizar_button",type="primary"):
-            with st.form(key='confirm_form'):
-                matricula = st.text_input("Digite sua matrícula:")
-                confirmar = st.form_submit_button("Confirmar")
+    # atualizar = st.button('ATUALIZAR',type="primary")
+        # Verifica se o botão de atualização foi clicado
+    if st.button("ATUALIZAR", key="atualizar_button",type="primary"):
+        with st.form(key='confirm_form'):
+            matricula = st.text_input("Digite sua matrícula:")
+            confirmar = st.form_submit_button("Confirmar")
 
-                if confirmar:
-                    matribase = len(baseCompleta[baseCompleta['MATRICULA'].str.contains(str(matricula))])
+            if confirmar:
+                matribase = len(baseCompleta[baseCompleta['MATRICULA'].str.contains(str(matricula))])
 
-                    if matribase >= 1:
-                        atualizaBanco(edited_df, baseCompleta)
-                        st.success('Atualizado com sucesso!', icon="✅")
-                    else:
-                        st.warning("Matrícula inválida ou processo cancelado.")
+                if matribase >= 1:
+                    atualizaBanco(edited_df, baseCompleta)
+                    st.success('Atualizado com sucesso!', icon="✅")
+                else:
+                    st.warning("Matrícula inválida ou processo cancelado.")
     # if atualizar:
     #     atualizaBanco(edited_df,baseCompleta)
     #     st.success('Atualizado com sucesso!', icon="✅")
