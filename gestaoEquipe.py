@@ -6,6 +6,16 @@ from dotenv import load_dotenv
 import os
 from streamlit.logger import get_logger
 
+
+class SessionState:
+    def __init__(self):
+        self.baseCompleta = None
+        self.edited_df = None
+        self.atualizar = False
+
+# Criar uma instância da classe SessionState
+session_state = SessionState()
+
 LOGGER = get_logger(__name__)
 
 st.set_page_config(
@@ -27,9 +37,9 @@ load_dotenv()
 
 config = {
   'host': 'roundhouse.proxy.rlwy.net',
-  'user': os.getenv("MYSQLUSER"),
+  'user': os.getenv('MYSQLUSER'),
   'port':'26496',
-  'password': os.getenv("MYSQLPASSWORD"),
+  'password': os.getenv('MYSQLPASSWORD'),
   'database': 'railway'
 }
 
@@ -140,4 +150,15 @@ def run():
         st.success('Atualizado com sucesso!', icon="✅")
         
 if __name__ == "__main__":
+    # Carregar dados no início da aplicação
+    if session_state.baseCompleta is None:
+        session_state.baseCompleta = load_data()
+
     run()
+
+    # Atualizar o banco de dados se o botão for pressionado
+    if session_state.atualizar:
+        atualizaBanco(session_state.edited_df, session_state.baseCompleta)
+        st.success('Atualizado com sucesso!', icon="✅")
+        # Resetar o estado de atualização
+        session_state.atualizar = False
