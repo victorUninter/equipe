@@ -2,7 +2,11 @@ from sqlalchemy import create_engine
 import pandas as pd
 import streamlit as st
 import pandas as pd
+from dotenv import load_dotenv
 import os
+from streamlit.logger import get_logger
+
+LOGGER = get_logger(__name__)
 
 st.set_page_config(
     page_title="Gestão Equipe",
@@ -18,11 +22,14 @@ with col1:
 with col2:
     st.title('GESTÃO EQUIPE DE COBRANÇA')
 
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
+
 config = {
   'host': 'roundhouse.proxy.rlwy.net',
-  'user': 'root',
+  'user': os.getenv("MYSQLUSER"),
   'port':'26496',
-  'password': '2b632BA2FhGFeFb4BHdcdC3G6B6-6-3d',
+  'password': os.getenv("MYSQLPASSWORD"),
   'database': 'railway'
 }
 
@@ -32,18 +39,20 @@ conn = f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['h
 # Cria o objeto de conexão usando create_engine
 engine = create_engine(conn)
 
+def load_data():
+    querySel = 'SELECT * FROM Equipe_Completa'
+    return pd.read_sql(querySel, engine)
+
 def atualizaBanco(edited_df,baseCompleta):
 
     baseconcat=pd.concat([edited_df,baseCompleta])
     baseconcat=baseconcat.drop_duplicates(subset='id')
     baseconcat.to_sql('Equipe_Completa', con=engine, if_exists='replace', index=False)
     engine.dispose()
-    return 
+    return baseconcat 
 
 def run():
-    
-    querySel='SELECT * FROM Equipe_Completa'
-    baseCompleta=pd.read_sql(querySel,engine)
+    baseCompleta = load_data()
 
     # Convertendo colunas para os tipos desejados
     baseCompleta['RU'] = baseCompleta['RU'].astype(str)
@@ -87,7 +96,7 @@ def run():
             'Selecione a Equipe',
             Equipe)
         optionsRpt = st.selectbox(
-            'Selecione o Resáponsável',
+            'Selecione o Responsável',
             Reporte)
         DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
         qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT_ATUAL']=='ATIVO'])
@@ -109,13 +118,26 @@ def run():
                                 },
                                 num_rows="dynamic"
                                 )
+        
         atualizar = st.button('ATUALIZAR',type="primary")
+        # Verifica se o botão de atualização foi clicado
+        # if st.button("ATUALIZAR", key="atualizar_button", type="primary"):
+        #     matricula = st.text_input("Digite sua matrícula:")
+        #     confirmar = st.button("Confirmar")
+
+        #     if confirmar:
+        #         matribase = len(baseCompleta[baseCompleta['MATRICULA'].str.contains(str(matricula))])
+
+        #         if matribase >= 1:
+        #             # Atualiza a variável global baseCompleta
+        #             baseCompleta = atualizaBanco(edited_df, baseCompleta)
+        #             st.success('Atualizado com sucesso!', icon="✅")
+        #         else:
+        #             st.warning("Matrícula inválida ou processo cancelado.")
 
     if atualizar:
         atualizaBanco(edited_df,baseCompleta)
         st.success('Atualizado com sucesso!', icon="✅")
-        st.rerun()
         
-
 if __name__ == "__main__":
     run()
