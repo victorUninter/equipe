@@ -89,7 +89,7 @@ def run():
         qtdeColabs=len(DfEqpFiltro)
         return DfEqpFiltro,qtdeColabs
 
-    Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO','TREINAMENTO']
+    Situacao=['ATIVO','ATESTADO','FÉRIAS','FOLGA','FOLGA_ANIVERSÁRIO','AFASTADO','FALTOU','INATIVO','TREINAMENTO']
     Situacao.insert(0,'TODOS')
     Equipe=list(baseCompleta['EQUIPE'].unique())
     Equipe.insert(0,'TODOS')
@@ -109,6 +109,7 @@ def run():
             'Selecione o Responsável',
             Reporte)
         DfEqpFiltro,qtdeColabs = exibeEquipe(optionsSit, optionsEqp, optionsRpt)
+        DfEqpFiltro=DfEqpFiltro.query("SIT_ATUAL != 'INATIVO'")
         qtdAtivos=len(DfEqpFiltro[DfEqpFiltro['SIT_ATUAL']=='ATIVO'])
         dif=qtdAtivos-qtdeColabs
         col1.metric("Total de Colaboradores",qtdeColabs,dif)
@@ -122,7 +123,7 @@ def run():
                                         "SIT. ATUAL",
                                         help="Situação do Colaborador",
                                         width="None",
-                                        options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO','TREINAMENTO'],
+                                        options=Situacao,
                                         required=True,
                                     )
                                 },
