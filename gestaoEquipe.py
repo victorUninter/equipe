@@ -89,7 +89,7 @@ def run():
         qtdeColabs=len(DfEqpFiltro)
         return DfEqpFiltro,qtdeColabs
 
-    Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO']
+    Situacao=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO','TREINAMENTO']
     Situacao.insert(0,'TODOS')
     Equipe=list(baseCompleta['EQUIPE'].unique())
     Equipe.insert(0,'TODOS')
@@ -122,7 +122,7 @@ def run():
                                         "SIT. ATUAL",
                                         help="Situação do Colaborador",
                                         width="None",
-                                        options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO'],
+                                        options=['ATIVO','ATESTADO','FÉRIAS','AFASTADO','FALTOU','INATIVO','TREINAMENTO'],
                                         required=True,
                                     )
                                 },
