@@ -123,7 +123,7 @@ def run():
                                         "SIT. ATUAL",
                                         help="Situação do Colaborador",
                                         width="None",
-                                        options=Situacao,
+                                        options=Situacao[1:],
                                         required=True,
                                     )
                                 },
